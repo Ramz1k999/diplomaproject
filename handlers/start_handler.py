@@ -1,9 +1,14 @@
-from aiogram import types, Dispatcher
-from handlers.lang_handler import get_text
+from telegram import Update
+from telegram.ext import CommandHandler, ContextTypes
 
-async def send_welcome(message: types.Message):
-    text = get_text(message.from_user.id, "start")
-    await message.answer(text, parse_mode=types.ParseMode.MARKDOWN)
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "👋 Hello! I'm your personal health assistant bot.\n\n"
+        "You can use these commands:\n"
+        "• /bmi - Check your BMI & get water recommendation\n"
+        "• /recipe - Get a healthy recipe using your ingredients\n"
+        "• /food - Get info about a food item\n"
+        "• /cancel - Cancel any operation"
+    )
 
-def register(dp: Dispatcher):
-    dp.register_message_handler(send_welcome, commands=['start'])
+help_command = CommandHandler("start", start)

@@ -1,17 +1,22 @@
-from aiogram import Bot, Dispatcher, executor
-from config import TELEGRAM_API_TOKEN
-from handlers import start_handler, lang_handler, bmi_handler, water_handler, recipe_handler, info_handler
+from telegram.ext import ApplicationBuilder
+from handlers.bmi_handler import bmi_handler
+from handlers.recipe_handler import recipe_handler
+from handlers.food_info_handler import food_info_handler
+from handlers.help_handler import help_command
 
-bot = Bot(token=TELEGRAM_API_TOKEN)
-dp = Dispatcher(bot)
+import config
 
-# Register all handlers
-lang_handler.register(dp)
-start_handler.register(dp)
-bmi_handler.register(dp)
-water_handler.register(dp)
-recipe_handler.register(dp)
-info_handler.register(dp)
+def main():
+    app = ApplicationBuilder().token(config.BOT_TOKEN).build()
 
-if __name__ == '__main__':
-    executor.start_polling(dp, skip_updates=True)
+    # Register handlers
+    app.add_handler(help_command)
+    app.add_handler(bmi_handler)
+    app.add_handler(recipe_handler)
+    app.add_handler(food_info_handler)
+
+    print("🤖 Bot is running...")
+    app.run_polling()
+
+if __name__ == "__main__":
+    main()

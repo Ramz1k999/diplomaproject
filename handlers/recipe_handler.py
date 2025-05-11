@@ -1,24 +1,40 @@
-from aiogram import types, Dispatcher
-from services.spoonacular import get_recipes
+from telegram import Update
+from telegram.ext import ContextTypes, CommandHandler, MessageHandler, ConversationHandler, filters
+from services.gemini_service import get_healthy_recipe
 
-async def ask_ingredients(message: types.Message):
-    await message.reply("Enter ingredients you have (comma-separated):")
+INGREDIENTS = 0
 
-async def handle_ingredient_input(message: types.Message):
-    ingredients = [i.strip() for i in message.text.split(',')]
-    recipes = get_recipes(ingredients)
 
-    if recipes:
-        response = "Here are some recipe suggestions:\n\n"
-        for r in recipes:
-            title = r['title']
-            url = f"https://spoonacular.com/recipes/{title.replace(' ', '-')}-{r['id']}"
-            response += f"🍽️ {title}\n🔗 {url}\n\n"
-    else:
-        response = "Sorry, no recipes found."
+async def start_recipe(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "🍅 Please enter the ingredients you have, separated by commas.\n"
+        "Example: chicken, broccoli, garlic"
+    )
+    return INGREDIENTS
 
-    await message.reply(response)
 
-def register(dp: Dispatcher):
-    dp.register_message_handler(ask_ingredients, commands=['recipe'])
-    dp.register_message_handler(handle_ingredient_input, lambda m: m.reply_to_message and "Enter ingredients" in m.reply_to_message.text)
+async def receive_ingredients(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text
+    ingredients = [i.strip() for i in text.split(",") if i.strip()]
+
+    if not ingredients:
+        await update.message.reply_text("⚠️ Please enter at least one ingredient.")
+        return INGREDIENTS
+
+    response = get_healthy_recipe(ingredients)
+    await update.message.reply_text(response)
+    return ConversationHandler.END
+
+
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("❌ Recipe request cancelled.")
+    return ConversationHandler.END
+
+
+recipe_handler = ConversationHandler(
+    entry_points=[CommandHandler("recipe", start_recipe)],
+    states={
+        INGREDIENTS: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_ingredients)],
+    },
+    fallbacks=[CommandHandler("cancel", cancel)],
+)

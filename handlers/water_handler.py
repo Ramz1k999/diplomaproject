@@ -1,5 +1,5 @@
 from aiogram import types, Dispatcher
-from services.utils import calculate_water_intake
+from services.gemini_service import calculate_water_intake
 
 async def ask_for_weight(message: types.Message):
     await message.reply("Please enter your weight in kg:")
