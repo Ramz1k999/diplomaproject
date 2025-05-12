@@ -32,7 +32,10 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 recipe_handler = ConversationHandler(
-    entry_points=[CommandHandler("recipe", start_recipe)],
+    entry_points=[
+        CommandHandler("recipe", start_recipe),
+        MessageHandler(filters.Regex("^🍲 Healthy Recipe$"), start_recipe)
+    ],
     states={
         INGREDIENTS: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_ingredients)],
     },

@@ -2,39 +2,32 @@ import google.generativeai as genai
 from typing import List
 
 # Configure Gemini with your API key
-genai.configure(api_key="YOUR_GEMINI_API_KEY")
+genai.configure(api_key="AIzaSyDeebLjMVlINL7mmGYb7kf-I5rR6cNEDGE")
 
 # Initialize the Gemini Pro model
-model = genai.GenerativeModel("gemini-pro")
+model = genai.GenerativeModel("models/gemini-1.5-flash")
 
 
-def handle_bmi_with_gemini(height: int, weight: int) -> str:
+def handle_bmi_with_gemini(height: int, weight: int, age: int, occupation: str) -> str:
     """
-    Generates BMI-based health advice using Gemini.
+    Generates a BMI-related health plan using Gemini, based on user's height, weight, age, and occupation.
     """
-    bmi = weight / ((height / 100) ** 2)  # BMI formula
-    bmi_category = ""
-
-    if bmi < 18.5:
-        bmi_category = "underweight"
-    elif 18.5 <= bmi < 24.9:
-        bmi_category = "normal weight"
-    elif 25 <= bmi < 29.9:
-        bmi_category = "overweight"
-    else:
-        bmi_category = "obese"
-
-    prompt = (
-        f"My BMI is {bmi:.1f}, I'm {height} cm tall and weigh {weight} kg. "
-        f"Please suggest a daily calorie plan to help me reach a healthy weight and provide one nutrition tip."
-    )
-
     try:
+        bmi = weight / ((height / 100) ** 2)
+        prompt = (
+            f"You're a friendly fitness coach. My height is {height} cm, weight is {weight} kg, age is {age}, and I work as a {occupation}. "
+            f"My BMI is {bmi:.1f}. Please keep your response short (under 100 words) and include emojis. Respond in this format:\n"
+            f"1. 🧠 BMI Insight (1 sentence)\n"
+            f"2. 🍽️ Daily Calorie Plan (short)\n"
+            f"3. 💡 Health Tip (fun and useful)\n"
+            f"4. 💼 Occupation Note (impact on health if any)"
+        )
         response = model.generate_content(prompt)
-        return f"Your BMI is {bmi:.1f} ({bmi_category}).\n{response.text.strip()}"
+        return f"🤖 *Your BMI is:* {bmi:.1f}\n{response.text.strip()}"
     except Exception as e:
         print("Gemini BMI error:", e)
-        return "⚠️ Sorry, I couldn't get BMI advice right now. Please try again later."
+        return "⚠️ Sorry, I couldn't get advice right now. Please try again later."
+
 
 
 def get_water_reminder(height: int, weight: int) -> str:

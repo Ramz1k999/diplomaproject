@@ -23,7 +23,10 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 food_info_handler = ConversationHandler(
-    entry_points=[CommandHandler("food", start_food_info)],
+    entry_points=[
+        CommandHandler("food", start_food_info),
+        MessageHandler(filters.Regex("^🥦 Food Info$"), start_food_info)
+    ],
     states={
         FOOD_NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_food_name)],
     },
