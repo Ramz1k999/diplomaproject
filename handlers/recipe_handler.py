@@ -21,8 +21,49 @@ async def receive_ingredients(update: Update, context: ContextTypes.DEFAULT_TYPE
         await update.message.reply_text("⚠️ Please enter at least one ingredient.")
         return INGREDIENTS
 
-    response = get_healthy_recipe(ingredients)
-    await update.message.reply_text(response)
+    # Show typing indicator while generating recipe
+    await update.message.chat.send_action(action="typing")
+
+    # Get recipe from Gemini
+    recipe_markdown = get_healthy_recipe(ingredients)
+
+    # Instead of complex conversion, create a simple HTML-safe version
+    lines = recipe_markdown.split('\n')
+    html_lines = []
+
+    for line in lines:
+        # Handle headings
+        if line.startswith('## '):
+            html_lines.append(f"<b>{line[3:]}</b>")
+        elif line.startswith('### '):
+            html_lines.append(f"\n<b>{line[4:]}:</b>")
+        # Handle bullet points
+        elif line.strip().startswith('• '):
+            html_lines.append(line)
+        # Handle numbered instructions
+        elif line.strip() and line[0].isdigit() and line[1:].startswith('. '):
+            html_lines.append(line)
+        # Handle bold text
+        elif '**' in line:
+            # Replace pairs of ** with <b> and </b>
+            parts = line.split('**')
+            new_line = ''
+            for i, part in enumerate(parts):
+                if i % 2 == 0:  # Even parts are outside **
+                    new_line += part
+                else:  # Odd parts are inside **
+                    new_line += f"<b>{part}</b>"
+            html_lines.append(new_line)
+        else:
+            html_lines.append(line)
+
+    # Join the HTML lines back together
+    recipe_html = '\n'.join(html_lines)
+
+    await update.message.reply_text(
+        f"<b>🎉 Here's a recipe using your ingredients!</b>\n\n{recipe_html}",
+        parse_mode="HTML"
+    )
     return ConversationHandler.END
 
 
