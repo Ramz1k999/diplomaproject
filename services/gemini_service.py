@@ -43,12 +43,37 @@ def get_water_reminder(height: int, weight: int) -> str:
 
 def get_healthy_recipe(ingredients: List[str]) -> str:
     """
-    Generates a healthy recipe suggestion based on the given ingredients.
+    Generates a beautifully formatted healthy recipe suggestion based on the given ingredients.
     """
-    prompt = (
-            "User has the following ingredients: " + ", ".join(ingredients) + ".\n"
-                                                                              "Suggest a healthy, quick recipe (under 30 min). Include name, steps, and benefits."
-    )
+    # Create a more structured prompt for consistent results
+    prompt = f"""Create a healthy recipe using some or all of these ingredients: {', '.join(ingredients)}.
+
+    Format your response exactly like this example, with all these sections:
+
+    ## 🍲 [RECIPE NAME]
+
+    ⏱️ **Prep Time:** [time] minutes | 🔥 **Cook Time:** [time] minutes | 🍽️ **Servings:** [number]
+
+    ### 📋 Ingredients:
+    • [ingredient 1 with measurement]
+    • [ingredient 2 with measurement]
+    • [etc...]
+
+    ### 📝 Instructions:
+    1. [step 1]
+    2. [step 2]
+    3. [etc...]
+
+    ### 💪 Health Benefits:
+    • [first health benefit]
+    • [second health benefit]
+    • [third health benefit]
+
+    ### 📊 Nutrition (per serving):
+    Calories: ~[number] | Protein: [number]g | Carbs: [number]g | Fat: [number]g
+
+    Make the recipe quick and easy (under 30 minutes total), healthy, and use as many of the provided ingredients as possible. Be creative but practical.
+    """
 
     try:
         response = model.generate_content(prompt)
@@ -60,13 +85,50 @@ def get_healthy_recipe(ingredients: List[str]) -> str:
 
 def get_food_info(food: str) -> str:
     """
-    Generates information about a given food item.
+    Generates detailed, structured information about a given food item.
     """
-    prompt = f"Provide detailed nutritional and health information for {food}. Include health benefits, nutrients, and recommended usage."
+    prompt = f"""Provide detailed nutritional information about {food}.
+    Format your response with these exact sections:
+
+    1. 🔍 OVERVIEW: Brief description of the food (2-3 sentences)
+    2. 📊 NUTRITION: Key nutritional values per 100g (calories, protein, carbs, fat)
+    3. 💪 HEALTH BENEFITS: 3 main health benefits (use bullet points)
+    4. 👩‍⚕️ HEALTH CONSIDERATIONS: Any allergens, concerns, or moderation advice
+    5. 🍽️ SERVING SUGGESTIONS: 2-3 healthy ways to include this in meals
+
+    Keep each section brief but informative. Use emojis for visual appeal.
+    """
 
     try:
         response = model.generate_content(prompt)
         return response.text.strip()
     except Exception as e:
         print("Gemini food info error:", e)
-        return "⚠️ Couldn't fetch food information right now. Try again later."
+        return f"⚠️ Couldn't fetch information about {food} right now. Please try again later."
+
+
+def get_random_health_tip() -> str:
+    """
+    Generates a random health tip using Gemini.
+    """
+    prompt = """Generate a single short, practical health tip that is:
+    1. Evidence-based and actionable
+    2. No more than 120 characters 
+    3. Focused on nutrition, exercise, mental health, or wellness
+    4. Include an appropriate emoji at the beginning
+
+    Format it as a single sentence without prefix or introduction.
+    """
+
+    try:
+        response = model.generate_content(prompt)
+        return response.text.strip()
+    except Exception as e:
+        print("Gemini health tip error:", e)
+        # Fallback tips in case the API call fails
+        fallback_tips = [
+            "💧 Drinking water before meals can help with portion control and hydration.",
+            "🚶 Walking for just 30 minutes a day can boost your cardiovascular health.",
+            "🥗 Incorporate colorful fruits and vegetables into meals for diverse nutrients."
+        ]
+        return random.choice(fallback_tips)
