@@ -14,7 +14,7 @@ async def receive_height(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⚖️ Now enter your weight in kg (e.g. 65):")
         return WEIGHT
     except ValueError:
-        await update.message.reply_text("⚠️ Please enter a valid number for height.")
+        await update.message.reply_text("⚠️ Please enter valid number for height.")
         return HEIGHT
 
 async def receive_weight(update: Update, context: ContextTypes.DEFAULT_TYPE):
