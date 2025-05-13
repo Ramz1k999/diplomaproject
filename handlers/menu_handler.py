@@ -27,6 +27,6 @@ async def handle_menu_selection(update: Update, context: ContextTypes.DEFAULT_TY
 
 menu_handler = MessageHandler(
     filters.TEXT & ~filters.COMMAND &
-    filters.Regex("^(🧮 BMI & Calories|💧 Water Reminder|🍲 Healthy Recipe|🥦 Food Info|🔄 Clear Chat)$"),
+    filters.Regex("^(🧮 BMI & Calories|💧 Water Reminder|🍲 Healthy Recipe|🥦 Food Info|◀️ Back)$"),
     handle_menu_selection
 )
