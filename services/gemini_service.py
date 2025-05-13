@@ -20,7 +20,7 @@ def handle_bmi_with_gemini(height: int, weight: int, age: int, occupation: str) 
             f"1. 🧠 BMI Insight (1 sentence)\n"
             f"2. 🍽️ Daily Calorie Plan (short)\n"
             f"3. 💡 Health Tip (fun and useful)\n"
-            f"4. 💼 Occupation Note (impact on health if any)"
+            f"4. 💼 Occupation Note (impact o health if any)"
         )
         response = model.generate_content(prompt)
         return f"🤖 *Your BMI is:* {bmi:.1f}\n{response.text.strip()}"
