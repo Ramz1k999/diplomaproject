@@ -38,7 +38,8 @@ async def start_water_reminder(update: Update, context: ContextTypes.DEFAULT_TYP
         buttons = [
             [InlineKeyboardButton("📋 View Schedule", callback_data="water_view_schedule")],
             [InlineKeyboardButton("✅ Log Water Intake", callback_data="water_checkin")],
-            [InlineKeyboardButton("🔄 Create New Water Plan", callback_data="water_new_plan")]
+            [InlineKeyboardButton("🔄 Create New Water Plan", callback_data="water_new_plan")],
+            [InlineKeyboardButton("🗑️ Reset Today's Check-ins", callback_data="water_reset_checkins")]
         ]
         reply_markup = InlineKeyboardMarkup(buttons)
 
@@ -97,8 +98,15 @@ async def new_plan_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         height = latest_bmi["height"]
         weight = latest_bmi["weight"]
 
-        # Reset water settings while keeping history
+        # Reset water settings while keeping history but clearing today's check-ins
         water_checkins = context.user_data.get("water_checkins", [])
+        now = datetime.now()
+        today = now.date()
+
+        # Filter out today's check-ins while preserving history
+        water_checkins = [c for c in water_checkins
+                          if datetime.strptime(c["timestamp"], "%Y-%m-%d %H:%M").date() != today]
+
         context.user_data["water_settings"] = {"height": height, "weight": weight}
         context.user_data["water_checkins"] = water_checkins
 
@@ -127,14 +135,64 @@ async def new_plan_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.message.reply_text("Let's create a new water plan for you! First, I need some information.")
     await query.message.reply_text("📏 Please enter your height in cm (e.g. 170):")
 
-    # Reset water settings but keep check-in history
+    # Reset water settings and clear today's check-ins
     water_checkins = context.user_data.get("water_checkins", [])
+    now = datetime.now()
+    today = now.date()
+
+    # Filter out today's check-ins while preserving history
+    water_checkins = [c for c in water_checkins
+                      if datetime.strptime(c["timestamp"], "%Y-%m-%d %H:%M").date() != today]
+
     if "water_settings" in context.user_data:
         del context.user_data["water_settings"]
     context.user_data["water_checkins"] = water_checkins
 
     # Start the conversation handler with HEIGHT state
     return HEIGHT
+
+
+async def reset_checkins_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Reset water check-ins for the current day"""
+    query = update.callback_query
+    await query.answer("Resetting today's water check-ins...")
+
+    # Get current date
+    now = datetime.now()
+    today = now.date()
+
+    # Initialize checkin history if needed
+    if "water_checkins" not in context.user_data:
+        context.user_data["water_checkins"] = []
+
+    # Filter out today's check-ins while preserving history
+    water_checkins = context.user_data["water_checkins"]
+    water_checkins = [c for c in water_checkins
+                      if datetime.strptime(c["timestamp"], "%Y-%m-%d %H:%M").date() != today]
+
+    # Save the filtered check-ins back to user data
+    context.user_data["water_checkins"] = water_checkins
+
+    # Update UI to show reset progress
+    buttons = [
+        [InlineKeyboardButton("✅ I Drank Water", callback_data="water_checkin")],
+        [InlineKeyboardButton("📋 View My Schedule", callback_data="water_view_schedule")]
+    ]
+    reply_markup = InlineKeyboardMarkup(buttons)
+
+    reset_message = (
+        f"🔄 <b>Check-ins Reset</b>\n\n"
+        f"Your water check-ins for today have been reset to zero.\n\n"
+        f"Progress: 0%\n"
+        f"{'⬜' * 10}\n\n"
+        f"Ready to start tracking your water intake for today!"
+    )
+
+    await query.edit_message_text(
+        reset_message,
+        parse_mode="HTML",
+        reply_markup=reply_markup
+    )
 
 
 async def receive_height(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -325,7 +383,8 @@ async def frequency_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
         # Create interactive buttons for water tracking
         buttons = [
             [InlineKeyboardButton("📋 View Schedule", callback_data="water_view_schedule")],
-            [InlineKeyboardButton("✅ I Drank Water", callback_data="water_checkin")]
+            [InlineKeyboardButton("✅ I Drank Water", callback_data="water_checkin")],
+            [InlineKeyboardButton("🗑️ Reset Today's Check-ins", callback_data="water_reset_checkins")]
         ]
         inline_markup = InlineKeyboardMarkup(buttons)
 
@@ -432,7 +491,8 @@ async def time_range_callback(update: Update, context: ContextTypes.DEFAULT_TYPE
     # Create buttons for water tracking
     buttons = [
         [InlineKeyboardButton("📋 View Schedule", callback_data="water_view_schedule")],
-        [InlineKeyboardButton("✅ I Drank Water", callback_data="water_checkin")]
+        [InlineKeyboardButton("✅ I Drank Water", callback_data="water_checkin")],
+        [InlineKeyboardButton("🗑️ Reset Today's Check-ins", callback_data="water_reset_checkins")]
     ]
     reply_markup = InlineKeyboardMarkup(buttons)
 
@@ -479,6 +539,7 @@ async def clear_water_reminder_jobs(context: ContextTypes.DEFAULT_TYPE, user_id=
 
     for job in current_jobs:
         job.schedule_removal()
+
 
 async def schedule_reminders(update: Update, context: ContextTypes.DEFAULT_TYPE, start_hour, end_hour, interval_hours):
     """Schedule actual water reminder jobs"""
@@ -536,7 +597,8 @@ async def send_water_reminder(context: ContextTypes.DEFAULT_TYPE):
     # Create interactive buttons for the reminder
     buttons = [
         [InlineKeyboardButton("✅ I Drank Water", callback_data="water_checkin")],
-        [InlineKeyboardButton("📋 View My Schedule", callback_data="water_view_schedule")]
+        [InlineKeyboardButton("📋 View My Schedule", callback_data="water_view_schedule")],
+        [InlineKeyboardButton("🗑️ Reset Today's Check-ins", callback_data="water_reset_checkins")]
     ]
     reply_markup = InlineKeyboardMarkup(buttons)
 
@@ -590,7 +652,8 @@ async def view_schedule_callback(update: Update, context: ContextTypes.DEFAULT_T
     # Create buttons for water tracking
     buttons = [
         [InlineKeyboardButton("✅ I Drank Water", callback_data="water_checkin")],
-        [InlineKeyboardButton("🔄 Update Schedule", callback_data="water_new_plan")]
+        [InlineKeyboardButton("🔄 Update Schedule", callback_data="water_new_plan")],
+        [InlineKeyboardButton("🗑️ Reset Today's Check-ins", callback_data="water_reset_checkins")]
     ]
     reply_markup = InlineKeyboardMarkup(buttons)
 
@@ -648,7 +711,8 @@ async def checkin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Create refreshed buttons
     buttons = [
         [InlineKeyboardButton("✅ I Drank Water", callback_data="water_checkin")],
-        [InlineKeyboardButton("📋 View My Schedule", callback_data="water_view_schedule")]
+        [InlineKeyboardButton("📋 View My Schedule", callback_data="water_view_schedule")],
+        [InlineKeyboardButton("🗑️ Reset Today's Check-ins", callback_data="water_reset_checkins")]
     ]
     reply_markup = InlineKeyboardMarkup(buttons)
 
@@ -695,3 +759,4 @@ def register_water_handlers(app):
     app.add_handler(CallbackQueryHandler(view_schedule_callback, pattern=r"^water_view_schedule$"))
     app.add_handler(CallbackQueryHandler(checkin_callback, pattern=r"^water_checkin$"))
     app.add_handler(CallbackQueryHandler(new_plan_callback, pattern=r"^water_new_plan$"))
+    app.add_handler(CallbackQueryHandler(reset_checkins_callback, pattern=r"^water_reset_checkins$"))
