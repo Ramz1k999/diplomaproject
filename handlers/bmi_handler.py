@@ -63,12 +63,43 @@ async def handle_bmi_option(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return OCCUPATION
 
+    elif option == "◀️ Back":
+        # Return to main menu
+        main_menu_keyboard = [
+            ["🧮 BMI & Calories", "💧 Water Reminder"],
+            ["🍲 Healthy Recipe", "🥦 Food Info"],
+            ["💪 Workout Plan", "◀️ Back"]
+        ]
+        reply_markup = ReplyKeyboardMarkup(main_menu_keyboard, resize_keyboard=True)
+        await update.message.reply_text("Returning to main menu.", reply_markup=reply_markup)
+        return ConversationHandler.END
+
+    # If we reach here, it's an unrecognized option
+    await update.message.reply_text("Please select one of the available options.")
     return BMI_OPTION
 
 
 async def receive_height(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text
+
+    if text == "◀️ Back":
+        # Return to main menu
+        main_menu_keyboard = [
+            ["🧮 BMI & Calories", "💧 Water Reminder"],
+            ["🍲 Healthy Recipe", "🥦 Food Info"],
+            ["💪 Workout Plan", "◀️ Back"]
+        ]
+        reply_markup = ReplyKeyboardMarkup(main_menu_keyboard, resize_keyboard=True)
+        await update.message.reply_text("Returning to main menu.", reply_markup=reply_markup)
+        return ConversationHandler.END
+
     try:
-        context.user_data["height"] = int(update.message.text)
+        height = int(text)
+        if height < 50 or height > 250:
+            await update.message.reply_text("⚠️ Please enter a valid height between 50 and 250 cm.")
+            return HEIGHT
+
+        context.user_data["height"] = height
         await update.message.reply_text("⚖️ Now enter your weight in kg (e.g. 65):")
         return WEIGHT
     except ValueError:
@@ -77,8 +108,26 @@ async def receive_height(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def receive_weight(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text
+
+    if text == "◀️ Back":
+        # Return to main menu
+        main_menu_keyboard = [
+            ["🧮 BMI & Calories", "💧 Water Reminder"],
+            ["🍲 Healthy Recipe", "🥦 Food Info"],
+            ["💪 Workout Plan", "◀️ Back"]
+        ]
+        reply_markup = ReplyKeyboardMarkup(main_menu_keyboard, resize_keyboard=True)
+        await update.message.reply_text("Returning to main menu.", reply_markup=reply_markup)
+        return ConversationHandler.END
+
     try:
-        context.user_data["weight"] = int(update.message.text)
+        weight = int(text)
+        if weight < 20 or weight > 300:
+            await update.message.reply_text("⚠️ Please enter a valid weight between 20 and 300 kg.")
+            return WEIGHT
+
+        context.user_data["weight"] = weight
         await update.message.reply_text("🎂 How old are you?")
         return AGE
     except ValueError:
@@ -87,9 +136,27 @@ async def receive_weight(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def receive_age(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text
+
+    if text == "◀️ Back":
+        # Return to main menu
+        main_menu_keyboard = [
+            ["🧮 BMI & Calories", "💧 Water Reminder"],
+            ["🍲 Healthy Recipe", "🥦 Food Info"],
+            ["💪 Workout Plan", "◀️ Back"]
+        ]
+        reply_markup = ReplyKeyboardMarkup(main_menu_keyboard, resize_keyboard=True)
+        await update.message.reply_text("Returning to main menu.", reply_markup=reply_markup)
+        return ConversationHandler.END
+
     try:
-        context.user_data["age"] = int(update.message.text)
-        await update.message.reply_text("💼 What is your occupation?")
+        age = int(text)
+        if age < 1 or age > 120:
+            await update.message.reply_text("⚠️ Please enter a valid age between 1 and 120 years.")
+            return AGE
+
+        context.user_data["age"] = age
+        await update.message.reply_text("💼 What is your occupation or activity level?")
         return OCCUPATION
     except ValueError:
         await update.message.reply_text("⚠️ Please enter a valid number for age.")
@@ -97,7 +164,20 @@ async def receive_age(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def receive_occupation(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data["occupation"] = update.message.text
+    text = update.message.text
+
+    if text == "◀️ Back":
+        # Return to main menu
+        main_menu_keyboard = [
+            ["🧮 BMI & Calories", "💧 Water Reminder"],
+            ["🍲 Healthy Recipe", "🥦 Food Info"],
+            ["💪 Workout Plan", "◀️ Back"]
+        ]
+        reply_markup = ReplyKeyboardMarkup(main_menu_keyboard, resize_keyboard=True)
+        await update.message.reply_text("Returning to main menu.", reply_markup=reply_markup)
+        return ConversationHandler.END
+
+    context.user_data["occupation"] = text
 
     height = context.user_data["height"]
     weight = context.user_data["weight"]
@@ -143,7 +223,7 @@ async def receive_occupation(update: Update, context: ContextTypes.DEFAULT_TYPE)
     main_menu_keyboard = [
         ["🧮 BMI & Calories", "💧 Water Reminder"],
         ["🍲 Healthy Recipe", "🥦 Food Info"],
-        ["◀️ Back"]
+        ["💪 Workout Plan", "◀️ Back"]
     ]
     reply_markup = ReplyKeyboardMarkup(main_menu_keyboard, resize_keyboard=True)
 
@@ -152,10 +232,19 @@ async def receive_occupation(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("❌ BMI check cancelled.")
+    """Cancel the conversation but preserve user data"""
+    # Return to main menu
+    main_menu_keyboard = [
+        ["🧮 BMI & Calories", "💧 Water Reminder"],
+        ["🍲 Healthy Recipe", "🥦 Food Info"],
+        ["💪 Workout Plan", "◀️ Back"]
+    ]
+    reply_markup = ReplyKeyboardMarkup(main_menu_keyboard, resize_keyboard=True)
+    await update.message.reply_text("Operation cancelled. Returning to main menu.", reply_markup=reply_markup)
     return ConversationHandler.END
 
 
+# Create the conversation handler with direct back button handling
 bmi_handler = ConversationHandler(
     entry_points=[
         CommandHandler("bmi", start_bmi),
@@ -169,4 +258,6 @@ bmi_handler = ConversationHandler(
         OCCUPATION: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_occupation)],
     },
     fallbacks=[CommandHandler("cancel", cancel)],
+    name="bmi_conversation",  # Give the handler a name
+    allow_reentry=True  # Allow re-entering the conversation
 )
