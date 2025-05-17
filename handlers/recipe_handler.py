@@ -80,5 +80,5 @@ recipe_handler = ConversationHandler(
     states={
         INGREDIENTS: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_ingredients)],
     },
-    fallbacks=[CommandHandler("cancel;", cancel)],
+    fallbacks=[CommandHandler("cancel", cancel)],
 )
