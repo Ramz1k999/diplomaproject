@@ -7,6 +7,7 @@ from handlers.food_info_handler import start_food_info
 from handlers.help_handler import clear_chat
 from handlers.recipe_handler import start_recipe
 from handlers.water_handler import start_water_reminder
+from handlers.workout_handler import start_workout_planner
 
 
 async def handle_menu_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -20,6 +21,8 @@ async def handle_menu_selection(update: Update, context: ContextTypes.DEFAULT_TY
         return await start_recipe(update, context)
     elif text == "🥦 Food Info":
         return await start_food_info(update, context)
+    elif text == "💪 Workout Plan":  # Add handler for new option
+        return await start_workout_planner(update, context)
     elif text == "◀️ Back":
         return await clear_chat(update, context)
 

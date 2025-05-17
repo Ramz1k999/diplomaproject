@@ -4,10 +4,10 @@ from services.gemini_service import get_random_health_tip
 
 # Enhanced keyboard with better organization
 main_menu_keyboard = [
-    ["🧮 BMI & Calories", "💧 Water Reminder"],
-    ["🍲 Healthy Recipe", "🥦 Food Info"],
-    ["◀️ Back"]
-]
+        ["🧮 BMI & Calories", "💧 Water Reminder"],
+        ["🍲 Healthy Recipe", "🥦 Food Info"],
+        ["💪 Workout Plan", "◀️ Back"]
+    ]
 
 
 
@@ -37,7 +37,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"• <b>💧 Water Reminder</b> - Get personalized hydration recommendations based on your profile\n\n"
         f"• <b>🍲 Healthy Recipe</b> - Discover delicious, healthy recipes using ingredients you already have\n\n"
         f"• <b>🥦 Food Info</b> - Learn detailed nutritional information about any food\n\n"
-        f"<b>How to use:</b> Simply tap one of the buttons below or use the corresponding commands (/bmi, /water, /recipe, /food)\n\n"
+        f"• <b>💪 Workout Plan</b> - Get a personalized exercise plan based on your profile and goals\n\n"
+        f"<b>How to use:</b> Simply tap one of the buttons below or use the corresponding commands\n\n"
         f"<i>This assistant is designed to provide general health information and is not a substitute for professional medical advice.</i>"
     )
 

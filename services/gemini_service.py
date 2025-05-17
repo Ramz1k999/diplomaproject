@@ -1,3 +1,5 @@
+import random
+
 import google.generativeai as genai
 from typing import List
 
@@ -132,3 +134,42 @@ def get_random_health_tip() -> str:
             "🥗 Incorporate colorful fruits and vegetables into meals for diverse nutrients."
         ]
         return random.choice(fallback_tips)
+
+
+def generate_workout_plan(height, weight, age, bmi, bmi_category, environment, equipment, goal, frequency, limitations):
+    """
+    Generates a personalized workout plan based on user data.
+    """
+    prompt = f"""Create a personalized workout plan with the following details:
+
+User Profile:
+- Height: {height} cm
+- Weight: {weight} kg
+- Age: {age} years
+- BMI: {bmi:.1f} ({bmi_category})
+
+Workout Parameters:
+- Environment: {environment}
+- Available Equipment: {equipment}
+- Fitness Goal: {goal}
+- Workout Frequency: {frequency}
+- Physical Limitations: {limitations}
+
+Format your response with these sections:
+1. <b>OVERVIEW</b>: Brief personalized summary of the workout plan tailored to this specific user.
+2. <b>WEEKLY SCHEDULE</b>: Day-by-day breakdown of exercises based on their frequency.
+3. <b>DETAILED WORKOUTS</b>: Each day's exercises with sets, reps, and rest periods.
+4. <b>PROGRESSION PLAN</b>: How to advance over the next 4 weeks.
+5. <b>NUTRITION TIPS</b>: Brief advice to support their workout goal.
+6. <b>TIPS & PRECAUTIONS</b>: Address their limitations and provide safety advice.
+
+IMPORTANT: Keep your response concise and under 3900 total characters to fit within messaging limits.
+Use emoji icons where appropriate to make the plan visually appealing.
+"""
+
+    try:
+        response = model.generate_content(prompt)
+        return response.text.strip()
+    except Exception as e:
+        print("Gemini workout plan error:", e)
+        return "⚠️ Couldn't generate a workout plan right now. Please try again later."
